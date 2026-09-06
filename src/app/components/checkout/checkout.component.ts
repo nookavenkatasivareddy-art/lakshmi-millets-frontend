@@ -100,61 +100,14 @@ export class CheckoutComponent implements OnInit {
   }
 
   sharePaymentLink() {
-    const shareText = `Please pay ₹${this.grandTotal} for your Lakshmi Millets order using this link.`;
-    const shareUrl = window.location.origin + '/pay/' + Date.now();
+    const upiId = '8897626612@sbi';
+    const payeeName = 'Lakshmi Millets';
+    const transactionNote = `Lakshmi Millets order payment`;
+    const upiLink = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(payeeName)}&am=${this.grandTotal.toFixed(2)}&cu=INR&tn=${encodeURIComponent(transactionNote)}`;
+    const message = `Lakshmi Millets payment link for ₹${this.grandTotal}: ${upiLink}`;
+    const whatsappUrl = `https://wa.me/918897626612?text=${encodeURIComponent(message)}`;
 
-    if (navigator.share) {
-      navigator.share({ title: 'Lakshmi Millets Payment', text: shareText, url: shareUrl }).catch(() => {});
-    } else {
-      navigator.clipboard?.writeText(`${shareText} ${shareUrl}`);
-      alert('Payment link copied to clipboard!');
-    }
+    window.open(whatsappUrl, '_blank', 'noopener');
     this.closePaymentLinkModal();
-  }
-
-  placeOrder() {
-    if (this.addressForm.invalid) { this.addressForm.markAllAsTouched(); return; }
-
-    this.placing = true;
-    this.errorMsg = '';
-
-    const shippingAddress = { ...this.addressForm.value };
-
-    const items = this.cart.items.map(i => ({ ...i }));
-
-    const finish = (paymentId?: string) => {
-      this.orderService.placeOrder({
-        items,
-        deliveryLocationId: this.selectedLocationId || undefined,
-        shippingAddress,
-        paymentMethod: this.paymentMethod,
-        paymentId
-      }).subscribe({
-        next: (order) => {
-          this.cart.clearCart();
-          this.placing = false;
-          this.router.navigate(['/orders'], { state: { placedOrderId: order.id } });
-        },
-        error: (err) => {
-          this.placing = false;
-          this.errorMsg = err.error?.message || 'Failed to place order';
-        }
-      });
-    };
-
-    if (this.paymentMethod === 'COD') {
-      finish();
-    } else {
-      // Simulated online payment flow: create -> (user pays on gateway UI) -> verify
-      this.paymentService.createPayment(this.grandTotal, this.paymentMethod).subscribe({
-        next: (payRes) => {
-          this.paymentService.verifyPayment(payRes.gatewayOrderId).subscribe({
-            next: (verifyRes) => finish(verifyRes.paymentId),
-            error: () => { this.placing = false; this.errorMsg = 'Payment verification failed'; }
-          });
-        },
-        error: () => { this.placing = false; this.errorMsg = 'Could not initiate payment'; }
-      });
-    }
   }
 }
