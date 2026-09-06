@@ -37,12 +37,16 @@ export class ProductDetailComponent implements OnInit {
   }
 
   addToCart() {
-    if (this.product && this.product.stock > 0) this.cart.addToCart(this.product, this.quantity);
+    if (this.product && this.product.stock > 0) {
+      this.cart.addToCart(this.product, this.quantity);
+      this.router.navigate(['/checkout']);
+    }
   }
 
   buyNow() {
     if (this.product && this.product.stock > 0) {
-      this.whatsapp.sendSingleProductOrder(this.product, this.quantity);
+      this.cart.addToCart(this.product, this.quantity);
+      this.router.navigate(['/checkout']);
     }
   }
 }

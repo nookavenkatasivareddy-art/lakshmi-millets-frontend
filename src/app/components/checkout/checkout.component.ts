@@ -50,6 +50,8 @@ export class CheckoutComponent implements OnInit {
       phone: ['', [Validators.required, Validators.pattern(/^[0-9]{10}$/)]],
       line1: ['', Validators.required],
       line2: [''],
+      city: ['', Validators.required],
+      state: ['', Validators.required],
       pincode: ['', [Validators.required, Validators.pattern(/^[0-9]{6}$/)]]
     });
   }
@@ -112,23 +114,18 @@ export class CheckoutComponent implements OnInit {
 
   placeOrder() {
     if (this.addressForm.invalid) { this.addressForm.markAllAsTouched(); return; }
-    if (!this.selectedLocation) { this.errorMsg = 'Please select a delivery location'; return; }
 
     this.placing = true;
     this.errorMsg = '';
 
-    const shippingAddress = {
-      ...this.addressForm.value,
-      city: this.selectedLocation.city,
-      state: this.selectedLocation.state
-    };
+    const shippingAddress = { ...this.addressForm.value };
 
     const items = this.cart.items.map(i => ({ ...i }));
 
     const finish = (paymentId?: string) => {
       this.orderService.placeOrder({
         items,
-        deliveryLocationId: this.selectedLocationId,
+        deliveryLocationId: this.selectedLocationId || undefined,
         shippingAddress,
         paymentMethod: this.paymentMethod,
         paymentId
