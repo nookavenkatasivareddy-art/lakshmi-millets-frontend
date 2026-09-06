@@ -110,4 +110,50 @@ export class CheckoutComponent implements OnInit {
     window.open(whatsappUrl, '_blank', 'noopener');
     this.closePaymentLinkModal();
   }
+
+  placeOrder() {
+    if (this.addressForm.invalid) { this.addressForm.markAllAsTouched(); return; }
+
+    this.placing = true;
+    this.errorMsg = '';
+
+    const shippingAddress = { ...this.addressForm.value };
+
+    const items = this.cart.items.map(i => ({ ...i }));
+
+    const finish = (paymentId?: string) => {
+      this.orderService.placeOrder({
+        items,
+        deliveryLocationId: this.selectedLocationId || undefined,
+        shippingAddress,
+        paymentMethod: this.paymentMethod,
+        paymentId
+      }).subscribe({
+        next: (order) => {
+          this.cart.clearCart();
+          this.placing = false;
+          this.router.navigate(['/orders'], { state: { placedOrderId: order.id } });
+        },
+        error: (err) => {
+          this.placing = false;
+          this.errorMsg = err.error?.message || 'Failed to place order';
+        }
+      });
+    };
+
+    if (this.paymentMethod === 'COD') {
+      finish();
+    } else {
+      // Simulated online payment flow: create -> (user pays on gateway UI) -> verify
+      this.paymentService.createPayment(this.grandTotal, this.paymentMethod).subscribe({
+        next: (payRes) => {
+          this.paymentService.verifyPayment(payRes.gatewayOrderId).subscribe({
+            next: (verifyRes) => finish(verifyRes.paymentId),
+            error: () => { this.placing = false; this.errorMsg = 'Payment verification failed'; }
+          });
+        },
+        error: () => { this.placing = false; this.errorMsg = 'Could not initiate payment'; }
+      });
+    }
+  }
 }
