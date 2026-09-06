@@ -20,6 +20,9 @@ import { BenefitsComponent } from './components/benefits/benefits.component';
 import { AboutComponent } from './components/about/about.component';
 import { ContactComponent } from './components/contact/contact.component';
 import { FaqComponent } from './components/faq/faq.component';
+import { TrackOrderComponent } from './components/track-order/track-order.component';
+import { ShippingPolicyComponent } from './components/shipping-policy/shipping-policy.component';
+import { ReturnPolicyComponent } from './components/return-policy/return-policy.component';
 import { AuthInterceptor } from './core/services/auth.interceptor';
 import { ImageUrlPipe } from './core/pipes/image-url.pipe';
 
@@ -37,7 +40,7 @@ import { ImageUrlPipe } from './core/pipes/image-url.pipe';
     AuthComponent,
     BenefitsComponent,
     AboutComponent,
-    ContactComponent,`r`n    FaqComponent,
+    ContactComponent,`r`n    FaqComponent,`r`n    TrackOrderComponent,`r`n    ShippingPolicyComponent,`r`n    ReturnPolicyComponent,
     ImageUrlPipe
   ],
   imports: [

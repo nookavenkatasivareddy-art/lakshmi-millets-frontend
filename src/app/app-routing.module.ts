@@ -12,6 +12,9 @@ import { BenefitsComponent } from './components/benefits/benefits.component';
 import { AboutComponent } from './components/about/about.component';
 import { ContactComponent } from './components/contact/contact.component';
 import { FaqComponent } from './components/faq/faq.component';
+import { TrackOrderComponent } from './components/track-order/track-order.component';
+import { ShippingPolicyComponent } from './components/shipping-policy/shipping-policy.component';
+import { ReturnPolicyComponent } from './components/return-policy/return-policy.component';
 import { AuthGuard } from './core/guards/auth.guard';
 
 const routes: Routes = [
@@ -22,6 +25,9 @@ const routes: Routes = [
   { path: 'about', component: AboutComponent },
   { path: 'contact', component: ContactComponent },
   { path: 'faq', component: FaqComponent },
+  { path: 'track-order', component: TrackOrderComponent },
+  { path: 'shipping-policy', component: ShippingPolicyComponent },
+  { path: 'return-policy', component: ReturnPolicyComponent },
   { path: 'products', component: ProductsComponent },
   { path: 'products/category/:slug', component: ProductsComponent },
   { path: 'product/:slug', component: ProductDetailComponent },
