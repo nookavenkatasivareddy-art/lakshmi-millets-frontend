@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { OrderService } from '../../core/services/order.service';
+import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-orders',
@@ -9,13 +10,22 @@ import { OrderService } from '../../core/services/order.service';
 export class OrdersComponent implements OnInit {
   orders: any[] = [];
   loading = true;
+  errorMsg = '';
 
-  constructor(private orderService: OrderService) {}
+  constructor(private orderService: OrderService, private auth: AuthService) {}
 
   ngOnInit(): void {
+    if (!this.auth.isLoggedIn()) {
+      this.loading = false;
+      this.errorMsg = 'Please log in to view your orders.';
+      return;
+    }
     this.orderService.getMyOrders().subscribe({
       next: o => { this.orders = o; this.loading = false; },
-      error: () => { this.loading = false; }
+      error: (err) => {
+        this.loading = false;
+        this.errorMsg = err.error?.message || 'Failed to load orders';
+      }
     });
   }
 }

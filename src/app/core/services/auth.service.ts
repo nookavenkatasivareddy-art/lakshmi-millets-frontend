@@ -14,7 +14,7 @@ export class AuthService {
   private currentUserSubject = new BehaviorSubject<AuthUser | null>(this.loadUser());
   currentUser$ = this.currentUserSubject.asObservable();
 
-  constructor(private http: HttpClient) {}
+  constructor(public http: HttpClient) {}
 
   private loadUser(): AuthUser | null {
     const raw = localStorage.getItem('lm_user');
@@ -29,6 +29,10 @@ export class AuthService {
   login(email: string, password: string): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${API_BASE_URL}/auth/login`, { email, password })
       .pipe(tap(res => this.setSession(res)));
+  }
+
+  getMe(): Observable<{ user: AuthUser }> {
+    return this.http.get<{ user: AuthUser }>(`${API_BASE_URL}/auth/me`);
   }
 
   private setSession(res: AuthResponse) {

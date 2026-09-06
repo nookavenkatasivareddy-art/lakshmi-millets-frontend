@@ -5,7 +5,8 @@ import { CartService } from '../../core/services/cart.service';
 import { DeliveryService } from '../../core/services/delivery.service';
 import { OrderService } from '../../core/services/order.service';
 import { PaymentService } from '../../core/services/payment.service';
-import { DeliveryLocation } from '../../core/models/models';
+import { AuthService } from '../../core/services/auth.service';
+import { DeliveryLocation, Address } from '../../core/models/models';
 
 @Component({
   selector: 'app-checkout',
@@ -14,8 +15,10 @@ import { DeliveryLocation } from '../../core/models/models';
 })
 export class CheckoutComponent implements OnInit {
   addressForm: FormGroup;
-  locations: DeliveryLocation[] = [];
-  selectedLocationId = '';
+  savedAddresses: Address[] = [];
+  selectedAddressId = '';
+  showNewAddressForm = false;
+  defaultLocationId = '';
   paymentMethod: 'COD' | 'CARD' | 'UPI' | 'NETBANKING' = 'COD';
   placing = false;
   errorMsg = '';
@@ -34,7 +37,7 @@ export class CheckoutComponent implements OnInit {
     { id: 'airtel', name: 'Airtel Payments Bank UPI', short: 'A', color: '#e40000' },
     { id: 'pop', name: 'POP UPI', short: 'pop', color: '#111111' },
     { id: 'navi', name: 'Navi UPI', short: 'n', color: '#3c1f8b' },
-    { id: 'fampay', name: 'FamPay UPI', short: 'F', color: '#ff8a00' }
+    { id: 'fampay', name: 'FamPay', short: 'F', color: '#ff8a00' }
   ];
 
   constructor(
@@ -43,6 +46,7 @@ export class CheckoutComponent implements OnInit {
     private deliveryService: DeliveryService,
     private orderService: OrderService,
     private paymentService: PaymentService,
+    private auth: AuthService,
     private router: Router
   ) {
     this.addressForm = this.fb.group({
@@ -61,10 +65,27 @@ export class CheckoutComponent implements OnInit {
       this.router.navigate(['/cart']);
       return;
     }
+
+    this.auth.getMe().subscribe({
+      next: (res) => {
+        const user = res.user;
+        this.savedAddresses = user?.addresses || [];
+        if (this.savedAddresses.length > 0) {
+          const def = this.savedAddresses.find((a: any) => a.isDefault) || this.savedAddresses[0];
+          this.selectedAddressId = def.id;
+        } else {
+          this.showNewAddressForm = true;
+        }
+      },
+      error: () => {
+        this.savedAddresses = [];
+        this.showNewAddressForm = true;
+      }
+    });
+
     this.deliveryService.getLocations().subscribe({
       next: locs => {
-        this.locations = locs;
-        if (locs.length) this.selectedLocationId = locs[0].id;
+        if (locs.length) this.defaultLocationId = locs[0].id;
       }
     });
   }
@@ -73,18 +94,31 @@ export class CheckoutComponent implements OnInit {
     return this.cart.itemsTotal;
   }
 
-  get selectedLocation(): DeliveryLocation | undefined {
-    return this.locations.find(l => l.id === this.selectedLocationId);
-  }
-
   get deliveryCharge(): number {
-    const loc = this.selectedLocation;
-    if (!loc) return 0;
-    return this.itemsTotal >= loc.freeDeliveryAbove ? 0 : loc.deliveryCharge;
+    if (!this.defaultLocationId) return 0;
+    const locs = (this.deliveryService as any).locations;
+    if (!locs) return 0;
+    const found = locs.find((l: DeliveryLocation) => l.id === this.defaultLocationId);
+    if (!found) return 0;
+    return this.itemsTotal >= found.freeDeliveryAbove ? 0 : found.deliveryCharge;
   }
 
   get grandTotal(): number {
     return this.itemsTotal + this.deliveryCharge;
+  }
+
+  selectAddress(id: string) {
+    this.selectedAddressId = id;
+    this.showNewAddressForm = false;
+    this.addressForm.reset();
+  }
+
+  toggleNewAddressForm() {
+    this.showNewAddressForm = !this.showNewAddressForm;
+    if (!this.showNewAddressForm) {
+      this.addressForm.reset();
+      this.selectedAddressId = this.savedAddresses.find(a => a.isDefault)?.id || this.savedAddresses[0]?.id || '';
+    }
   }
 
   selectUpiApp(id: string) {
@@ -112,19 +146,31 @@ export class CheckoutComponent implements OnInit {
   }
 
   placeOrder() {
-    if (this.addressForm.invalid) { this.addressForm.markAllAsTouched(); return; }
+    let shippingAddress: any;
+
+    if (this.selectedAddressId) {
+      const addr = this.savedAddresses.find(a => a.id === this.selectedAddressId);
+      if (!addr) {
+        this.errorMsg = 'Please select a delivery address';
+        return;
+      }
+      shippingAddress = { ...addr };
+    } else if (this.addressForm.valid) {
+      shippingAddress = { ...this.addressForm.value };
+    } else {
+      this.errorMsg = 'Please add a delivery address';
+      return;
+    }
 
     this.placing = true;
     this.errorMsg = '';
-
-    const shippingAddress = { ...this.addressForm.value };
 
     const items = this.cart.items.map(i => ({ ...i }));
 
     const finish = (paymentId?: string) => {
       this.orderService.placeOrder({
         items,
-        deliveryLocationId: this.selectedLocationId || undefined,
+        deliveryLocationId: this.defaultLocationId || undefined,
         shippingAddress,
         paymentMethod: this.paymentMethod,
         paymentId
@@ -144,7 +190,6 @@ export class CheckoutComponent implements OnInit {
     if (this.paymentMethod === 'COD') {
       finish();
     } else {
-      // Simulated online payment flow: create -> (user pays on gateway UI) -> verify
       this.paymentService.createPayment(this.grandTotal, this.paymentMethod).subscribe({
         next: (payRes) => {
           this.paymentService.verifyPayment(payRes.gatewayOrderId).subscribe({

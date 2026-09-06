@@ -22,6 +22,24 @@
 .top-right a { color: #fff; }
 .top-right a:hover { text-decoration: underline; }
 
+.free-delivery-scroll {
+  display: inline-block;
+  overflow: hidden;
+  max-width: 320px;
+  vertical-align: middle;
+}
+
+.free-delivery-text {
+  display: inline-block;
+  white-space: nowrap;
+  animation: scrollText 8s linear infinite;
+}
+
+@keyframes scrollText {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
 /* ===== Main header ===== */
 .main-header {
   background: #fff;

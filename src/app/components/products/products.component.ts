@@ -19,6 +19,7 @@ export class ProductsComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
+    private router: Router,
     private productService: ProductService,
     private categoryService: CategoryService,
     private cart: CartService
@@ -54,5 +55,6 @@ export class ProductsComponent implements OnInit {
   addToCart(product: Product) {
     if (product.stock <= 0) return;
     this.cart.addToCart(product, 1);
+    this.router.navigate(['/checkout']);
   }
 }
