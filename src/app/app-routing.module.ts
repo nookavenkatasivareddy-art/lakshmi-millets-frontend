@@ -11,6 +11,7 @@ import { OrdersComponent } from './components/orders/orders.component';
 import { BenefitsComponent } from './components/benefits/benefits.component';
 import { AboutComponent } from './components/about/about.component';
 import { ContactComponent } from './components/contact/contact.component';
+import { FaqComponent } from './components/faq/faq.component';
 import { AuthGuard } from './core/guards/auth.guard';
 
 const routes: Routes = [
@@ -20,6 +21,7 @@ const routes: Routes = [
   { path: 'benefits', component: BenefitsComponent },
   { path: 'about', component: AboutComponent },
   { path: 'contact', component: ContactComponent },
+  { path: 'faq', component: FaqComponent },
   { path: 'products', component: ProductsComponent },
   { path: 'products/category/:slug', component: ProductsComponent },
   { path: 'product/:slug', component: ProductDetailComponent },

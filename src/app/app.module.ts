@@ -19,6 +19,7 @@ import { AuthComponent } from './components/auth/auth.component';
 import { BenefitsComponent } from './components/benefits/benefits.component';
 import { AboutComponent } from './components/about/about.component';
 import { ContactComponent } from './components/contact/contact.component';
+import { FaqComponent } from './components/faq/faq.component';
 import { AuthInterceptor } from './core/services/auth.interceptor';
 import { ImageUrlPipe } from './core/pipes/image-url.pipe';
 
@@ -36,7 +37,7 @@ import { ImageUrlPipe } from './core/pipes/image-url.pipe';
     AuthComponent,
     BenefitsComponent,
     AboutComponent,
-    ContactComponent,
+    ContactComponent,`r`n    FaqComponent,
     ImageUrlPipe
   ],
   imports: [
