@@ -28,4 +28,9 @@ export class OrdersComponent implements OnInit {
       }
     });
   }
+
+  orderLabel(order: any): string {
+    const raw = String(order?.id || order?._id || '');
+    return raw ? raw.slice(-8).toUpperCase() : '';
+  }
 }

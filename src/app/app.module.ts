@@ -40,7 +40,11 @@ import { ImageUrlPipe } from './core/pipes/image-url.pipe';
     AuthComponent,
     BenefitsComponent,
     AboutComponent,
-    ContactComponent,`r`n    FaqComponent,`r`n    TrackOrderComponent,`r`n    ShippingPolicyComponent,`r`n    ReturnPolicyComponent,
+    ContactComponent,
+    FaqComponent,
+    TrackOrderComponent,
+    ShippingPolicyComponent,
+    ReturnPolicyComponent,
     ImageUrlPipe
   ],
   imports: [

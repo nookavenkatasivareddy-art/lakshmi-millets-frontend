@@ -6,7 +6,7 @@ import { CartItem, ShippingAddress } from '../models/models';
 
 export interface PlaceOrderPayload {
   items: CartItem[];
-  deliveryLocationId: string;
+  deliveryLocationId?: string;
   shippingAddress: ShippingAddress;
   paymentMethod: 'COD' | 'CARD' | 'UPI' | 'NETBANKING';
   paymentId?: string;

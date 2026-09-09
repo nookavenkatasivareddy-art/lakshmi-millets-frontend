@@ -29,6 +29,10 @@ export class NavbarComponent implements OnInit {
     return ['All Categories', ...this.categories.map(c => c.name)];
   }
 
+  get firstName(): string {
+    return (this.currentUser?.name || '').split(' ')[0] || '';
+  }
+
   constructor(
     private auth: AuthService,
     private cart: CartService,

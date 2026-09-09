@@ -112,7 +112,7 @@
           </svg>
         </button>
         <div class="dropdown-panel account-panel" *ngIf="showAccountMenu">
-          <span class="hello">Hi, {{ currentUser.name.split(' ')[0] }}</span>
+          <span class="hello">Hi, {{ firstName }}</span>
           <a routerLink="/orders" (click)="showAccountMenu = false">My Orders</a>
           <button class="logout-btn" (click)="logout()">Logout</button>
         </div>

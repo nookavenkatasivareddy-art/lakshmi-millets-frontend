@@ -71,8 +71,8 @@ export class CheckoutComponent implements OnInit {
         const user = res.user;
         this.savedAddresses = user?.addresses || [];
         if (this.savedAddresses.length > 0) {
-          const def = this.savedAddresses.find((a: any) => a.isDefault) || this.savedAddresses[0];
-          this.selectedAddressId = def.id;
+          const def = this.savedAddresses.find((a) => a.isDefault) || this.savedAddresses[0];
+          this.selectedAddressId = this.addressId(def);
         } else {
           this.showNewAddressForm = true;
         }
@@ -85,7 +85,7 @@ export class CheckoutComponent implements OnInit {
 
     this.deliveryService.getLocations().subscribe({
       next: locs => {
-        if (locs.length) this.defaultLocationId = locs[0].id;
+        if (locs.length) this.defaultLocationId = locs[0].id || locs[0]._id || '';
       }
     });
   }
@@ -96,9 +96,9 @@ export class CheckoutComponent implements OnInit {
 
   get deliveryCharge(): number {
     if (!this.defaultLocationId) return 0;
-    const locs = (this.deliveryService as any).locations;
+    const locs = this.deliveryService.locations;
     if (!locs) return 0;
-    const found = locs.find((l: DeliveryLocation) => l.id === this.defaultLocationId);
+    const found = locs.find((l: DeliveryLocation) => (l.id || l._id) === this.defaultLocationId);
     if (!found) return 0;
     return this.itemsTotal >= found.freeDeliveryAbove ? 0 : found.deliveryCharge;
   }
@@ -117,8 +117,13 @@ export class CheckoutComponent implements OnInit {
     this.showNewAddressForm = !this.showNewAddressForm;
     if (!this.showNewAddressForm) {
       this.addressForm.reset();
-      this.selectedAddressId = this.savedAddresses.find(a => a.isDefault)?.id || this.savedAddresses[0]?.id || '';
+      this.selectedAddressId = this.addressId(this.savedAddresses.find(a => a.isDefault) || this.savedAddresses[0]);
     }
+  }
+
+  private addressId(addr: Address | undefined): string {
+    if (!addr) return '';
+    return addr.id || addr._id || '';
   }
 
   selectUpiApp(id: string) {
@@ -149,7 +154,7 @@ export class CheckoutComponent implements OnInit {
     let shippingAddress: any;
 
     if (this.selectedAddressId) {
-      const addr = this.savedAddresses.find(a => a.id === this.selectedAddressId);
+      const addr = this.savedAddresses.find(a => this.addressId(a) === this.selectedAddressId);
       if (!addr) {
         this.errorMsg = 'Please select a delivery address';
         return;
@@ -178,7 +183,7 @@ export class CheckoutComponent implements OnInit {
         next: (order) => {
           this.cart.clearCart();
           this.placing = false;
-          this.router.navigate(['/orders'], { state: { placedOrderId: order.id } });
+          this.router.navigate(['/orders'], { state: { placedOrderId: order?.id || order?._id } });
         },
         error: (err) => {
           this.placing = false;

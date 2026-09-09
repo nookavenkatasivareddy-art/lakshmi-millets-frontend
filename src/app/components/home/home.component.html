@@ -42,7 +42,7 @@
   </div>
 
   <div class="product-grid">
-    <div class="product-card card" *ngFor="let p of popularProducts" [routerLink]="['/product', p.slug]" [class.out-of-stock]="p.stock <= 0">
+    <div class="product-card card clickable" *ngFor="let p of popularProducts" (click)="goToProduct(p.slug)" [class.out-of-stock]="p.stock <= 0" tabindex="0" (keyup.enter)="goToProduct(p.slug)">
       <div class="product-img">
         <span class="stock-badge out" *ngIf="p.stock <= 0">Out of Stock</span>
         <img [src]="p.image | imageUrl:'products'" [alt]="p.name" onerror="this.src='assets/images/placeholder.jpg'">

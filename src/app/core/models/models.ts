@@ -22,7 +22,8 @@ export interface Product {
 }
 
 export interface DeliveryLocation {
-  id: string;
+  id?: string;
+  _id?: string;
   city: string;
   state: string;
   deliveryCharge: number;
@@ -49,6 +50,8 @@ export interface ShippingAddress {
 }
 
 export interface Address {
+  id?: string;
+  _id?: string;
   fullName: string;
   phone: string;
   line1: string;

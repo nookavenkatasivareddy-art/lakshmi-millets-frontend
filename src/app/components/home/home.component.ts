@@ -46,6 +46,10 @@ export class HomeComponent implements OnInit {
     this.router.navigate(['/products/category', slug]);
   }
 
+  goToProduct(slug: string) {
+    this.router.navigate(['/product', slug]);
+  }
+
   addToCart(product: Product, event: Event) {
     event.stopPropagation();
     if (product.stock <= 0) return;
