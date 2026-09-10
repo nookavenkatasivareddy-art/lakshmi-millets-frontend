@@ -22,25 +22,32 @@
 
         <div class="new-address-toggle" *ngIf="savedAddresses.length > 0">
           <button type="button" class="btn btn-outline small" (click)="toggleNewAddressForm()">
-            {{ showNewAddressForm ? 'Cancel' : '+ Add New Address' }}
+            {{ showNewAddressForm ? 'Use saved address' : '+ Add New Address' }}
           </button>
         </div>
+
+        <p class="hint" *ngIf="savedAddresses.length > 0 && !showNewAddressForm">
+          Filling the form below will use the <b>new address</b> instead of the selected saved one.
+        </p>
 
         <div class="new-address-form" [class.open]="showNewAddressForm || savedAddresses.length === 0">
           <form [formGroup]="addressForm">
             <div class="form-row">
               <div class="form-group">
-                <label>Full Name</label>
+                <label>Full Name *</label>
                 <input type="text" formControlName="fullName" placeholder="Receiver's name">
+                <small class="error-text" *ngIf="addressForm.get('fullName')?.touched && addressForm.get('fullName')?.invalid">Full name required</small>
               </div>
               <div class="form-group">
-                <label>Phone</label>
-                <input type="text" formControlName="phone" placeholder="10-digit mobile">
+                <label>Phone (10 digits) *</label>
+                <input type="text" formControlName="phone" placeholder="10-digit mobile" maxlength="10">
+                <small class="error-text" *ngIf="addressForm.get('phone')?.touched && addressForm.get('phone')?.invalid">Enter a valid 10-digit mobile number</small>
               </div>
             </div>
             <div class="form-group">
-              <label>Address Line 1</label>
+              <label>Address Line 1 *</label>
               <input type="text" formControlName="line1" placeholder="House no, street, area">
+              <small class="error-text" *ngIf="addressForm.get('line1')?.touched && addressForm.get('line1')?.invalid">Address line 1 required</small>
             </div>
             <div class="form-group">
               <label>Address Line 2 (optional)</label>
@@ -48,16 +55,19 @@
             </div>
             <div class="form-row">
               <div class="form-group">
-                <label>City</label>
+                <label>City *</label>
                 <input type="text" formControlName="city" placeholder="City">
+                <small class="error-text" *ngIf="addressForm.get('city')?.touched && addressForm.get('city')?.invalid">City required</small>
               </div>
               <div class="form-group">
-                <label>State</label>
+                <label>State *</label>
                 <input type="text" formControlName="state" placeholder="State">
+                <small class="error-text" *ngIf="addressForm.get('state')?.touched && addressForm.get('state')?.invalid">State required</small>
               </div>
               <div class="form-group">
-                <label>Pincode</label>
-                <input type="text" formControlName="pincode" placeholder="6-digit pincode">
+                <label>Pincode (6 digits) *</label>
+                <input type="text" formControlName="pincode" placeholder="6-digit pincode" maxlength="6">
+                <small class="error-text" *ngIf="addressForm.get('pincode')?.touched && addressForm.get('pincode')?.invalid">Enter a valid 6-digit pincode</small>
               </div>
             </div>
           </form>

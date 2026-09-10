@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+﻿import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CartService } from '../../core/services/cart.service';
@@ -6,6 +6,7 @@ import { DeliveryService } from '../../core/services/delivery.service';
 import { OrderService } from '../../core/services/order.service';
 import { PaymentService } from '../../core/services/payment.service';
 import { AuthService } from '../../core/services/auth.service';
+import { WhatsappService } from '../../core/services/whatsapp.service';
 import { DeliveryLocation, Address } from '../../core/models/models';
 
 @Component({
@@ -47,6 +48,7 @@ export class CheckoutComponent implements OnInit {
     private orderService: OrderService,
     private paymentService: PaymentService,
     private auth: AuthService,
+    private whatsapp: WhatsappService,
     private router: Router
   ) {
     this.addressForm = this.fb.group({
@@ -126,6 +128,25 @@ export class CheckoutComponent implements OnInit {
     return addr.id || addr._id || '';
   }
 
+  /** True when the user typed anything into the new-address form. */
+  private hasTypedAddressInput(): boolean {
+    if (this.showNewAddressForm) return true;
+    const v = this.addressForm.value || {};
+    return ['fullName', 'phone', 'line1', 'line2', 'city', 'state', 'pincode']
+      .some(k => String(v[k] || '').trim().length > 0);
+  }
+
+  /** Human-readable first validation problem, or null when valid. */
+  private describeAddressProblem(v: any): string | null {
+    if (!String(v.fullName || '').trim()) return 'full name required';
+    if (!/^[0-9]{10}$/.test(String(v.phone || '').trim())) return 'phone must be 10 digits';
+    if (!String(v.line1 || '').trim()) return 'address line 1 required';
+    if (!String(v.city || '').trim()) return 'city required';
+    if (!String(v.state || '').trim()) return 'state required';
+    if (!/^[0-9]{6}$/.test(String(v.pincode || '').trim())) return 'pincode must be 6 digits';
+    return null;
+  }
+
   selectUpiApp(id: string) {
     this.selectedUpiApp = id;
   }
@@ -153,7 +174,16 @@ export class CheckoutComponent implements OnInit {
   placeOrder() {
     let shippingAddress: any;
 
-    if (this.selectedAddressId) {
+    // New typed address always wins when its form is open or has any input.
+    // (Old logic trusted selectedAddressId blindly and ignored a freshly
+    // typed address, so users kept seeing "Please add a delivery address".)
+    const typedAddress = this.hasTypedAddressInput() ? { ...this.addressForm.value } : null;
+    const typedAddressError = typedAddress ? this.describeAddressProblem(typedAddress) : null;
+
+    if (typedAddress && !typedAddressError) {
+      shippingAddress = typedAddress;
+      this.showNewAddressForm = false;
+    } else if (this.selectedAddressId) {
       const addr = this.savedAddresses.find(a => this.addressId(a) === this.selectedAddressId);
       if (!addr) {
         this.errorMsg = 'Please select a delivery address';
@@ -162,10 +192,19 @@ export class CheckoutComponent implements OnInit {
       // Send only backend-expected address fields (strip id/_id/isDefault).
       const { fullName, phone, line1, line2, city, state, pincode } = addr;
       shippingAddress = { fullName, phone, line1, line2, city, state, pincode };
-    } else if (this.addressForm.valid) {
-      shippingAddress = { ...this.addressForm.value };
+      if (typedAddressError) {
+        // Typed form was started but is incomplete - tell the user exactly what is missing.
+        this.addressForm.markAllAsTouched();
+        this.errorMsg = `New address incomplete (${typedAddressError}). Fix it or clear the form to use the saved address.`;
+        return;
+      }
+    } else if (typedAddress) {
+      this.addressForm.markAllAsTouched();
+      this.errorMsg = `Please fix the delivery address (${typedAddressError || 'all fields required'}).`;
+      return;
     } else {
       this.addressForm.markAllAsTouched();
+      this.showNewAddressForm = true;
       this.errorMsg = 'Please add a delivery address';
       return;
     }
@@ -192,6 +231,20 @@ export class CheckoutComponent implements OnInit {
           this.cart.clearCart();
           this.placing = false;
           console.log('[checkout] order placed', order);
+          // Open admin WhatsApp with full order details (customer confirms send).
+          try {
+            this.whatsapp.sendCheckoutOrder({
+              orderId: order?.id || order?._id || '',
+              items,
+              itemsTotal: this.itemsTotal,
+              deliveryCharge: this.deliveryCharge,
+              grandTotal: this.grandTotal,
+              shippingAddress,
+              paymentMethod: this.paymentMethod
+            });
+          } catch (e) {
+            console.warn('[checkout] whatsapp open failed', e);
+          }
           this.router.navigate(['/orders'], { state: { placedOrderId: order?.id || order?._id } });
         },
         error: (err) => {

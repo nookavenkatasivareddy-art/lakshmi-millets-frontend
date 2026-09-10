@@ -1,0 +1,38 @@
+<section class="container orders-page">
+  <h2 class="section-title">Admin <span class="highlight">Orders</span></h2>
+
+  <p *ngIf="loading">Loading orders...</p>
+  <p *ngIf="!loading && errorMsg" class="error-text">{{ errorMsg }}</p>
+  <p *ngIf="!loading && !errorMsg && orders.length === 0">No orders yet.</p>
+
+  <div class="order-card card" *ngFor="let order of orders">
+    <div class="order-header">
+      <div>
+        <b>Order #{{ orderLabel(order) }}</b>
+        <small>{{ order.createdAt | date: 'medium' }} · {{ customerName(order) }} · {{ order.shippingAddress?.phone }}</small>
+      </div>
+      <span class="status-badge">{{ order.orderStatus }}</span>
+    </div>
+
+    <div class="order-items">
+      <div class="order-item" *ngFor="let item of order.items">
+        <span>{{ item.name }} × {{ item.quantity }}</span>
+        <span>₹{{ item.price * item.quantity }}</span>
+      </div>
+    </div>
+
+    <div class="order-footer">
+      <span>Ship to: {{ order.shippingAddress?.fullName }}, {{ order.shippingAddress?.city }}, {{ order.shippingAddress?.state }} - {{ order.shippingAddress?.pincode }}</span>
+      <span class="total">Total: ₹{{ order.grandTotal }} ({{ order.paymentMethod }} / {{ order.paymentStatus }})</span>
+    </div>
+
+    <div class="admin-actions">
+      <label>Update status:
+        <select [value]="order.orderStatus" (change)="setStatus(order, $any($event.target).value)" [disabled]="updatingId === (order.id || order._id)">
+          <option *ngFor="let s of statuses" [value]="s">{{ s }}</option>
+        </select>
+      </label>
+      <button class="btn btn-outline small" (click)="openCustomerWhatsApp(order)">WhatsApp customer</button>
+    </div>
+  </div>
+</section>

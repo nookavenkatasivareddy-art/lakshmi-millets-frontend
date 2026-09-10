@@ -23,4 +23,16 @@ export class OrderService {
   getMyOrders(): Observable<any[]> {
     return this.http.get<any[]>(`${API_BASE_URL}/orders/my`);
   }
+
+  /** Admin: all orders, newest first. */
+  getAllOrders(): Observable<any[]> {
+    return this.http.get<any[]>(`${API_BASE_URL}/orders`);
+  }
+
+  /** Admin: PLACED -> CONFIRMED -> SHIPPED -> DELIVERED (or CANCELLED/CLOSED). */
+  updateOrderStatus(id: string, orderStatus: string, paymentStatus?: string): Observable<any> {
+    const body: any = { orderStatus };
+    if (paymentStatus) body.paymentStatus = paymentStatus;
+    return this.http.patch(`${API_BASE_URL}/orders/${id}/status`, body);
+  }
 }

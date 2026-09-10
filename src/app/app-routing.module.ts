@@ -3,6 +3,7 @@ import { RouterModule, Routes } from '@angular/router';
 
 import { HomeComponent } from './components/home/home.component';
 import { AuthComponent } from './components/auth/auth.component';
+import { AdminOrdersComponent } from './components/admin-orders/admin-orders.component';
 import { ProductsComponent } from './components/products/products.component';
 import { ProductDetailComponent } from './components/product-detail/product-detail.component';
 import { CartComponent } from './components/cart/cart.component';
@@ -16,6 +17,7 @@ import { TrackOrderComponent } from './components/track-order/track-order.compon
 import { ShippingPolicyComponent } from './components/shipping-policy/shipping-policy.component';
 import { ReturnPolicyComponent } from './components/return-policy/return-policy.component';
 import { AuthGuard } from './core/guards/auth.guard';
+import { AdminGuard } from './core/guards/admin.guard';
 
 const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -34,6 +36,7 @@ const routes: Routes = [
   { path: 'cart', component: CartComponent },
   { path: 'checkout', component: CheckoutComponent, canActivate: [AuthGuard] },
   { path: 'orders', component: OrdersComponent, canActivate: [AuthGuard] },
+  { path: 'admin/orders', component: AdminOrdersComponent, canActivate: [AdminGuard] },
   { path: '**', redirectTo: '' }
 ];
 

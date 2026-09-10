@@ -37,6 +37,7 @@ import { ImageUrlPipe } from './core/pipes/image-url.pipe';
     CartComponent,
     CheckoutComponent,
     OrdersComponent,
+    AdminOrdersComponent,
     AuthComponent,
     BenefitsComponent,
     AboutComponent,
