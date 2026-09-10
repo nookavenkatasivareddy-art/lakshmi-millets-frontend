@@ -159,10 +159,13 @@ export class CheckoutComponent implements OnInit {
         this.errorMsg = 'Please select a delivery address';
         return;
       }
-      shippingAddress = { ...addr };
+      // Send only backend-expected address fields (strip id/_id/isDefault).
+      const { fullName, phone, line1, line2, city, state, pincode } = addr;
+      shippingAddress = { fullName, phone, line1, line2, city, state, pincode };
     } else if (this.addressForm.valid) {
       shippingAddress = { ...this.addressForm.value };
     } else {
+      this.addressForm.markAllAsTouched();
       this.errorMsg = 'Please add a delivery address';
       return;
     }
@@ -173,21 +176,28 @@ export class CheckoutComponent implements OnInit {
     const items = this.cart.items.map(i => ({ ...i }));
 
     const finish = (paymentId?: string) => {
-      this.orderService.placeOrder({
+      const payload: any = {
         items,
-        deliveryLocationId: this.defaultLocationId || undefined,
         shippingAddress,
         paymentMethod: this.paymentMethod,
         paymentId
-      }).subscribe({
+      };
+      // Backend treats empty-string location as invalid ObjectId - omit it.
+      if (this.defaultLocationId) {
+        payload.deliveryLocationId = this.defaultLocationId;
+      }
+      console.log('[checkout] placing order', payload);
+      this.orderService.placeOrder(payload).subscribe({
         next: (order) => {
           this.cart.clearCart();
           this.placing = false;
+          console.log('[checkout] order placed', order);
           this.router.navigate(['/orders'], { state: { placedOrderId: order?.id || order?._id } });
         },
         error: (err) => {
           this.placing = false;
-          this.errorMsg = err.error?.message || 'Failed to place order';
+          console.error('[checkout] place order failed', err);
+          this.errorMsg = err.error?.message || `Failed to place order (${err.status || 'network'}). Check backend /api/orders.`;
         }
       });
     };

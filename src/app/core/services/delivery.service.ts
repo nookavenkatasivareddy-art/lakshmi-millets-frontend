@@ -11,8 +11,8 @@ export class DeliveryService {
   constructor(private http: HttpClient) {}
 
   getLocations(): Observable<DeliveryLocation[]> {
-    return this.http
-      .get<DeliveryLocation[]>(`${API_BASE_URL}/delivery-locations`)
-      .pipe(tap((locs) => { this.locations = locs; }));
+    return this.http.get<DeliveryLocation[]>(`${API_BASE_URL}/delivery-locations`).pipe(
+      tap(locs => { this.locations = locs; })
+    );
   }
 }
