@@ -43,23 +43,26 @@ export class WhatsappService {
     this.openWhatsApp(message);
   }
 
-  /** Full order notification sent to admin right after a successful checkout. */
+  /**
+   * Full order notification sent to admin right after a successful checkout.
+   * Matches the image-2 "New Food Order Received!" model — customer taps send,
+   * and the order lands on the admin WhatsApp (8897626612).
+   */
   sendCheckoutOrder(details: CheckoutOrderDetails): void {
     const a = details.shippingAddress;
-    let message = `*New Order - Lakshmi Millets*\n`;
-    if (details.orderId) message += `Order ID: ${details.orderId}\n`;
-    message += `Payment: ${details.paymentMethod}\n`;
-    message += `--------------------------\n`;
-    details.items.forEach((item, index) => {
-      message += `${index + 1}. ${item.name} x${item.quantity} - \u20B9${item.price * item.quantity}\n`;
-    });
-    message += `--------------------------\n`;
-    message += `Items Total: \u20B9${details.itemsTotal}\n`;
-    message += `Delivery: \u20B9${details.deliveryCharge}\n`;
-    message += `Grand Total: \u20B9${details.grandTotal}\n`;
-    message += `--------------------------\n`;
-    message += `Ship to: ${a.fullName}, ${a.line1}${a.line2 ? ', ' + a.line2 : ''}, ${a.city}, ${a.state} - ${a.pincode}\n`;
-    message += `Phone: ${a.phone}`;
+    const id = details.orderId ? '#' + details.orderId.slice(-8).toUpperCase() : '#NEW';
+    const lines = details.items
+      .map(i => `${i.quantity}x ${i.name}${(i as any).weight ? ' (' + (i as any).weight + ')' : ''}`)
+      .join('\n');
+    const message =
+      `🔔 New Food Order Received!\n\n` +
+      `Order ID: ${id}\n` +
+      `Customer: ${a.fullName}\n` +
+      `Phone: ${a.phone}\n\n` +
+      `Items:\n${lines}\n\n` +
+      `Total: Rs.${Number(details.grandTotal).toFixed(2)}\n` +
+      `Payment: ${details.paymentMethod}\n\n` +
+      `Please check the admin panel for complete order details.`;
     this.openWhatsApp(message);
   }
 

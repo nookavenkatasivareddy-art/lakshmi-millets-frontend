@@ -15,6 +15,8 @@ import { ProductDetailComponent } from './components/product-detail/product-deta
 import { CartComponent } from './components/cart/cart.component';
 import { CheckoutComponent } from './components/checkout/checkout.component';
 import { OrdersComponent } from './components/orders/orders.component';
+import { AdminOrdersComponent } from './components/admin-orders/admin-orders.component';
+
 import { AuthComponent } from './components/auth/auth.component';
 import { BenefitsComponent } from './components/benefits/benefits.component';
 import { AboutComponent } from './components/about/about.component';
